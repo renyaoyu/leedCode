@@ -25,24 +25,7 @@ public class LongestSubstring {
     }
 
     public static String longestPalindrome(String s) {//最长回文串
-        char[] source = s.toCharArray();
-        char[] desc = new char[source.length];
-        for (int i = 0; i < source.length; i++) {
-            desc[source.length - i] = source[i];
-        }
-        int start = 0;
-        int end = 0;
-        int maxLength = 0;
-        for (int i = 0; i < desc.length; i++) {
-            for (int j = 0; j < desc.length - i; j++) {
-                String temp = String.copyValueOf(desc, i, j);
-                int index = s.indexOf(temp);
-                if (index >= 0) {
-
-                }
-            }
-
-        }
+        return null;
     }
 
 
