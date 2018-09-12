@@ -9,9 +9,14 @@ import java.lang.reflect.Proxy;
 
 /**
  * Created by daojia on 2018/8/21.
+ * 类说明
  */
 @TestAnnotation
 public class ProxyTest {
+    /**
+     * 方法说明
+     * @param args
+     */
     public static void main(String[] args) {
         System.setProperty("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
         Class<MyInterface>[] clazzArr = new Class[] {MyInterface.class,TestInterface.class};
@@ -19,11 +24,20 @@ public class ProxyTest {
         o.say();
     }
 }
+
+/**
+ * 测试内部类
+ */
 class MyHandler implements InvocationHandler{
     private People people ;
 //    public MyHandler(Student student){
 //        this.student = student;
 //    }
+
+    /**
+     * 测试方法
+     * @param people
+     */
     public MyHandler(People people){
         this.people = people;
     }
