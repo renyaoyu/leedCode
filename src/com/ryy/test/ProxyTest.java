@@ -2,6 +2,9 @@ package com.ryy.test;
 
 import com.ryy.annotations.TestAnnotation;
 
+import com.ryy.annotation.TestAnnotation;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
