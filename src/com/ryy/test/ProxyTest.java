@@ -1,74 +1,52 @@
 package com.ryy.test;
 
-import com.ryy.annotation.TestAnnotation;
+import com.ryy.annotations.TestAnnotation;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 
 /**
  * Created by daojia on 2018/8/21.
- * 类说明
  */
 @TestAnnotation
 public class ProxyTest {
-    /**
-     * 方法说明
-     * @param args
-     */
-    public static void main(String[] args) {
-        System.setProperty("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
-        Class<MyInterface>[] clazzArr = new Class[] {MyInterface.class,TestInterface.class};
-        MyInterface o = (MyInterface)Proxy.newProxyInstance(ProxyTest.class.getClassLoader(), clazzArr, new MyHandler(new People()));
-        o.say();
-    }
-}
-
-/**
- * 测试内部类
- */
-class MyHandler implements InvocationHandler{
-    private People people ;
-//    public MyHandler(Student student){
-//        this.student = student;
+//    public static void main(String[] args) {
+//        System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+//        Class<Human>[] interfaceArray = new Class[]{Human.class};
+//        Human h = (Human)Proxy.newProxyInstance(ProxyTest.class.getClassLoader(), interfaceArray, new MyInvocationHandler(new Student()));
+//        h.say();
 //    }
-
-    /**
-     * 测试方法
-     * @param people
-     */
-    public MyHandler(People people){
-        this.people = people;
-    }
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-//        MyInterface proxy1 = (MyInterface) proxy;
-//        proxy1.say();
-        System.out.println("代理方法前置+++++++");
-//        Thread.sleep(10000);
-//        Object invoke = method.invoke(proxy,args);
-        Object invoke = method.invoke(people,args);
-//        student.cry();
-        System.out.println("代理方法后置-------");
-        return null;
+    public static void main(String[] args) {
+        System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+        Student student = new Student();
+        TestAnnotation annotation = student.getClass().getAnnotation(TestAnnotation.class);
+        System.out.println(annotation.name());
     }
 }
-interface TestInterface{
-    void eat();
-}
-interface MyInterface{
+interface Human{
     void say();
 }
-class People implements MyInterface{
+@TestAnnotation
+class Student implements Human{
 
     @Override
     public void say() {
-        System.out.println("people say !!!!");
+        System.out.println("student 说:");
     }
 }
-class Student {
-    public void cry() {
-        System.out.println("student cry !!!!");
+class MyInvocationHandler implements InvocationHandler {
+
+    private Human human;
+    MyInvocationHandler(Human human){
+        this.human = human;
+    }
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("清了清嗓子");
+//        Human proxy1 = (Human) proxy;
+//        proxy1.toString();
+        human.say();
+        System.out.println("大家好");
+        return null;
     }
 }
