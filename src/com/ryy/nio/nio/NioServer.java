@@ -18,85 +18,78 @@ import java.util.Set;
  * Created by daojia on 2018/9/12.
  */
 public class NioServer {
-    public static void main(String[] args) {
-        int port = 8080;
-        new Thread(new ServerRunnable(port)).start();
-    }
-}
 
-class ServerRunnable implements Runnable {
+    public Selector selector;
 
-    private Selector selector;
+    public ServerSocketChannel channel;
 
-    private ServerSocketChannel channel;
+    int port = 8080;
 
-    private volatile boolean stop;
-
-    public ServerRunnable(int port) {
-        try {
-            selector = Selector.open();
-            channel = ServerSocketChannel.open();
-            channel.configureBlocking(false);
-            channel.socket().bind(new InetSocketAddress(port),1024);
-            channel.register(selector,SelectionKey.OP_ACCEPT);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public NioServer() throws IOException {
+        selector = Selector.open();
+        channel = ServerSocketChannel.open();
+        channel.configureBlocking(false);
+        channel.socket().bind(new InetSocketAddress(port));
+        channel.register(selector,SelectionKey.OP_ACCEPT);
     }
 
-    public void stop(){
-        this.stop = true;
-    }
-
-    @Override
-    public void run() {
-        while (!stop){
-            try {
-                selector.select(1000);
-                Set<SelectionKey> selectionKeys = selector.selectedKeys();
-                Iterator<SelectionKey> iterator = selectionKeys.iterator();
-                while (iterator.hasNext()){
-                    SelectionKey key = iterator.next();
-                    iterator.remove();
-                    handel(key);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+    public static void main(String[] args) throws IOException {
+        NioServer nioServer = new NioServer();
+        while (true){
+            nioServer.selector.select(1000);
+            Set<SelectionKey> selectionKeys = nioServer.selector.selectedKeys();
+            Iterator<SelectionKey> iterator = selectionKeys.iterator();
+            while (iterator.hasNext()){
+                SelectionKey key = iterator.next();
+                iterator.remove();
+                nioServer.handle(key);
             }
         }
+
     }
 
-    private void handel(SelectionKey selectionKey) throws IOException {
-        if (selectionKey.isValid()){
-            if (selectionKey.isAcceptable()){
-                ServerSocketChannel ssc = (ServerSocketChannel)selectionKey.channel();
+    public void handle(SelectionKey key) throws IOException {
+        System.out.println("handle");
+        if (key.isValid()){
+            if (key.isAcceptable()){
+                ServerSocketChannel ssc = (ServerSocketChannel)key.channel();
                 SocketChannel sc = ssc.accept();
                 sc.configureBlocking(false);
                 sc.register(selector,SelectionKey.OP_READ);
-            }else if (selectionKey.isReadable()){
-                SocketChannel sc = (SocketChannel)selectionKey.channel();
-                ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-                int read = sc.read(byteBuffer);
-                if (read > 0){
-                    byteBuffer.flip();
-                    byte[] bytes = new byte[byteBuffer.remaining()];
-                    byteBuffer.get(bytes);
-                    String query = new String(bytes, "UTF-8");
-                    System.out.println("server receive :"+query);
-                    doWrite(sc,"get the query :"+query);
-                }else if (read < 0){
-                    selectionKey.cancel();
-                    sc.close();
-                }
+            }else if (key.isReadable()){
+                SocketChannel sc = (SocketChannel) key.channel();
+                String s = doRead(key);
+                doWrite(key,s);
+//                sc.register(selector,SelectionKey.OP_READ);
+            }else if (key.isWritable()){
+
             }
         }
     }
 
-    private void doWrite(SocketChannel socketChannel,String response) throws IOException {
-        byte[] bytes = response.getBytes();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(bytes.length);
-        byteBuffer.put(bytes);
+    public String doRead(SelectionKey key) throws IOException {
+        System.out.println("doRead");
+        SocketChannel sc = (SocketChannel)key.channel();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        int read = sc.read(byteBuffer);
+        String result = "";
+        if (read > 0) {
+            byteBuffer.flip();
+            byte[] bytes = new byte[byteBuffer.remaining()];
+            byteBuffer.get(bytes);
+            result = new String(bytes, "UTF-8");
+            System.out.println("服务端接收消息:" + result);
+        }
+        return result;
+    }
+
+    public void doWrite(SelectionKey key,String string) throws IOException {
+        System.out.println("doWrite");
+        SocketChannel sc = (SocketChannel)key.channel();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        byte[] receive = (string).getBytes();
+        byteBuffer.put(receive);
         byteBuffer.flip();
-        socketChannel.write(byteBuffer);
+        sc.write(byteBuffer);
     }
 }
